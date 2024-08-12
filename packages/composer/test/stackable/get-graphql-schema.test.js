@@ -6,6 +6,8 @@ const { buildStackable } = require('../..')
 const { createGraphqlService } = require('../helper')
 
 test('should start composer with a graphql service', async t => {
+  globalThis.platformatic = {}
+
   const graphql1 = await createGraphqlService(t, {
     schema: `
     type Query {
@@ -38,11 +40,12 @@ test('should start composer with a graphql service', async t => {
   })
   await stackable.start()
 
-  const graphqlSchema = await stackable.getGraphqlSchema()
-  assert.strictEqual(graphqlSchema, 'type Query {\n  add(x: Int, y: Int): Int\n}')
+  assert.strictEqual(globalThis.platformatic.graphQLSchema, 'type Query {\n  add(x: Int, y: Int): Int\n}')
 })
 
-test('get null if server does not expose openapi', async (t) => {
+test('get nothing if server does not expose openapi', async t => {
+  globalThis.platformatic = {}
+
   const config = {
     composer: {
       services: [],
@@ -55,6 +58,5 @@ test('get null if server does not expose openapi', async (t) => {
   })
   await stackable.start()
 
-  const openapiSchema = await stackable.getGraphqlSchema()
-  assert.strictEqual(openapiSchema, null)
+  assert.ifError(globalThis.platformatic.graphQLSchema)
 })

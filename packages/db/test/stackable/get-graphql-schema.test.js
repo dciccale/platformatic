@@ -6,7 +6,9 @@ const { join } = require('node:path')
 const { buildConfigManager, getConnectionInfo } = require('../helper')
 const { buildStackable } = require('../..')
 
-test('get service openapi schema via stackable api', async (t) => {
+test('get service openapi schema via stackable api', async t => {
+  globalThis.platformatic = {}
+
   const workingDir = join(__dirname, '..', 'fixtures', 'directories')
   const { connectionInfo, dropTestDB } = await getConnectionInfo()
 
@@ -34,11 +36,12 @@ test('get service openapi schema via stackable api', async (t) => {
   })
   await stackable.start()
 
-  const graphqlSchema = await stackable.getGraphqlSchema()
-  assert.strictEqual(graphqlSchema, 'type Query {\n  hello: String\n}')
+  assert.strictEqual(globalThis.platformatic.graphQLSchema, 'type Query {\n  hello: String\n}')
 })
 
-test('get null if server does not expose graphql', async (t) => {
+test('get nothing if server does not expose graphql', async t => {
+  globalThis.platformatic = {}
+
   const workingDir = join(__dirname, '..', 'fixtures', 'directories')
   const { connectionInfo, dropTestDB } = await getConnectionInfo()
 
@@ -67,6 +70,5 @@ test('get null if server does not expose graphql', async (t) => {
   })
   await stackable.start()
 
-  const graphqlSchema = await stackable.getGraphqlSchema()
-  assert.strictEqual(graphqlSchema, null)
+  assert.ifError(globalThis.platformatic.graphQLSchema)
 })

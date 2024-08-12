@@ -11,6 +11,7 @@ const { fetch, setGlobalDispatcher, Agent } = require('undici')
 const { wire } = require('undici-thread-interceptor')
 
 const { PlatformaticApp } = require('./app')
+const { Context } = require('./context')
 const { setupITC } = require('./itc')
 const loadInterceptors = require('./interceptors')
 const { MessagePortWritable } = require('../streams/message-port-writable')
@@ -22,6 +23,7 @@ process.on('unhandledRejection', handleUnhandled.bind(null, 'unhandled rejection
 
 globalThis.fetch = fetch
 globalThis[kId] = threadId
+globalThis.platformatic = new Context()
 
 let app
 const config = workerData.config

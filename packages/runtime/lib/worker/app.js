@@ -7,7 +7,7 @@ const { FileWatcher } = require('@platformatic/utils')
 const debounce = require('debounce')
 
 const errors = require('../errors')
-const { getServiceUrl, loadConfig } = require('../utils')
+const { getServiceUrl, loadConfig, loadEmptyConfig } = require('../utils')
 
 class PlatformaticApp extends EventEmitter {
   #starting
@@ -71,6 +71,7 @@ class PlatformaticApp extends EventEmitter {
         app: this.config.app,
         ...config,
         id: this.appConfig.id,
+        entrypoint: this.appConfig.entrypoint,
         configManager,
       })
       this.stackable = stackable
@@ -87,7 +88,7 @@ class PlatformaticApp extends EventEmitter {
     this.#starting = true
 
     try {
-      await this.stackable.init()
+      await this.stackable.init?.()
     } catch (err) {
       this.#logAndExit(err)
     }
@@ -151,10 +152,26 @@ class PlatformaticApp extends EventEmitter {
 
     let _config
     try {
-      _config = await loadConfig({}, ['-c', appConfig.config], {
-        onMissingEnv: this.#fetchServiceUrl,
-        context: appConfig,
-      }, true)
+      if (!appConfig.config) {
+        _config = await loadEmptyConfig(
+          appConfig.path,
+          {
+            onMissingEnv: this.#fetchServiceUrl,
+            context: appConfig,
+          },
+          true
+        )
+      } else {
+        _config = await loadConfig(
+          {},
+          ['-c', appConfig.config],
+          {
+            onMissingEnv: this.#fetchServiceUrl,
+            context: appConfig,
+          },
+          true
+        )
+      }
     } catch (err) {
       this.#logAndExit(err)
     }
@@ -170,7 +187,7 @@ class PlatformaticApp extends EventEmitter {
     const appConfig = this.appConfig
     const { configManager } = this.config
 
-    configManager.on('error', (err) => {
+    configManager.on('error', err => {
       /* c8 ignore next */
       this.stackable.log({ message: 'error reloading the configuration' + err, level: 'error' })
     })
@@ -210,10 +227,7 @@ class PlatformaticApp extends EventEmitter {
       })
     }
 
-    if (
-      (this.#hasManagementApi && configManager.current.metrics === undefined) ||
-      configManager.current.metrics
-    ) {
+    if ((this.#hasManagementApi && configManager.current.metrics === undefined) || configManager.current.metrics) {
       const labels = configManager.current.metrics?.labels || {}
       const serviceId = this.appConfig.id
       configManager.update({
@@ -245,9 +259,7 @@ class PlatformaticApp extends EventEmitter {
     configManager.current.server = configManager.current.server || {}
     const level = configManager.current.server.logger?.level
 
-    configManager.current.server.logger = level
-      ? this.#logger.child({ level })
-      : this.#logger
+    configManager.current.server.logger = level ? this.#logger.child({}, { level }) : this.#logger
   }
 
   #fetchServiceUrl (key, { parent, context: service }) {

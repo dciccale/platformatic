@@ -5,7 +5,9 @@ const { test } = require('node:test')
 const { join } = require('node:path')
 const { buildStackable } = require('../..')
 
-test('get service openapi schema via stackable api', async (t) => {
+test('get service openapi schema via stackable api', async t => {
+  globalThis.platformatic = {}
+
   const config = {
     server: {
       hostname: '127.0.0.1',
@@ -27,7 +29,7 @@ test('get service openapi schema via stackable api', async (t) => {
   })
   await stackable.start()
 
-  const openapiSchema = await stackable.getOpenapiSchema()
+  const openapiSchema = globalThis.platformatic.openAPISchema
   assert.strictEqual(openapiSchema.openapi, '3.0.3')
   assert.deepStrictEqual(openapiSchema.info, {
     description: 'This is a service built on top of Platformatic',
@@ -45,7 +47,9 @@ test('get service openapi schema via stackable api', async (t) => {
   })
 })
 
-test('get null if server does not expose openapi', async (t) => {
+test('get nothing if server does not expose openapi', async t => {
+  globalThis.platformatic = {}
+
   const config = {
     server: {
       hostname: '127.0.0.1',
@@ -67,6 +71,5 @@ test('get null if server does not expose openapi', async (t) => {
   })
   await stackable.start()
 
-  const openapiSchema = await stackable.getOpenapiSchema()
-  assert.strictEqual(openapiSchema, null)
+  assert.ifError(globalThis.platformatic.openAPISchema)
 })

@@ -1,3 +1,5 @@
+/* globals platformatic */
+
 'use strict'
 
 const { printSchema } = require('graphql')
@@ -23,11 +25,17 @@ class ServiceStackable {
   async start (options = {}) {
     await this.init()
 
-    if (options.listen === false) {
-      await this.app.ready()
-      return
+    const action = options.listen ? 'start' : 'ready'
+
+    await this.app[action]()
+
+    if (this.app.swagger) {
+      platformatic.openAPISchema = this.app.swagger()
     }
-    await this.app.start()
+
+    if (this.app.graphql) {
+      platformatic.graphQLSchema = printSchema(this.app.graphql.schema)
+    }
   }
 
   async stop () {
@@ -54,27 +62,13 @@ class ServiceStackable {
     return this.app
   }
 
-  async getOpenapiSchema () {
-    await this.init()
-    await this.app.ready()
-    return this.app.swagger ? this.app.swagger() : null
-  }
-
-  async getGraphqlSchema () {
-    await this.init()
-    await this.app.ready()
-    return this.app.graphql ? printSchema(this.app.graphql.schema) : null
-  }
-
   async getMetrics ({ format }) {
     await this.init()
 
     const promRegister = this.app.metrics?.client?.register
     if (!promRegister) return null
 
-    return format === 'json'
-      ? promRegister.getMetricsAsJSON()
-      : promRegister.metrics()
+    return format === 'json' ? promRegister.getMetricsAsJSON() : promRegister.metrics()
   }
 
   async inject (injectParams) {
