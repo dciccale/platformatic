@@ -1,0 +1,6 @@
+{
+  "$schema": "https://schemas.platformatic.dev/@platformatic/basic/1.52.0.json",
+  "vite": {
+    "configFile": "custom.vite.config.js"
+  }
+}

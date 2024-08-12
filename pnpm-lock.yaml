@@ -57,6 +57,9 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
+      vite:
+        specifier: ^5.4.0
+        version: 5.4.0(@types/node@20.14.14)
 
   packages/cli:
     dependencies:

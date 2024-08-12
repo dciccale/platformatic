@@ -12,6 +12,24 @@ export const schema = {
     $schema: {
       type: 'string',
     },
+    service: {
+      type: 'object',
+      properties: {
+        base: {
+          type: 'string',
+        },
+      },
+      additionalProperties: false,
+    },
+    vite: {
+      type: 'object',
+      properties: {
+        configFile: {
+          oneOf: [{ type: 'string' }, { type: 'boolean' }],
+        },
+      },
+      additionalProperties: false,
+    },
   },
   additionalProperties: false,
 }

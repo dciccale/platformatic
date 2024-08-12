@@ -8,6 +8,7 @@ import { ConfigManager } from '@platformatic/config'
 
 import { packageJson, schema } from './lib/schema.js'
 import { ServerStackable } from './lib/server.js'
+import { ViteStackable } from './lib/vite.js'
 
 const validFields = [
   'main',
@@ -74,10 +75,19 @@ async function parsePackageJson (root) {
 
 export async function buildStackable (opts) {
   const root = opts.configManager.dirname
-  const { entrypoint, hadEntrypointField } = await parsePackageJson(root)
+  const {
+    entrypoint,
+    hadEntrypointField,
+    packageJson: { dependencies, devDependencies },
+  } = await parsePackageJson(root)
 
-  const configType = 'nodejs'
-  const Loader = ServerStackable
+  let configType = 'nodejs'
+  let Loader = ServerStackable
+
+  if (dependencies?.vite || devDependencies?.vite) {
+    configType = 'vite'
+    Loader = ViteStackable
+  }
 
   const configManager = new ConfigManager({ schema, source: opts.configManager.fullPath ?? {} })
   await configManager.parseAndValidate()
