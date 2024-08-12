@@ -29,12 +29,14 @@ class ServiceStackable {
 
     await this.app[action]()
 
-    if (this.app.swagger) {
-      platformatic.openAPISchema = this.app.swagger()
-    }
+    if (globalThis.platformatic) {
+      if (this.app.swagger) {
+        platformatic.openAPISchema = this.app.swagger()
+      }
 
-    if (this.app.graphql) {
-      platformatic.graphQLSchema = printSchema(this.app.graphql.schema)
+      if (this.app.graphql) {
+        platformatic.graphQLSchema = printSchema(this.app.graphql.schema)
+      }
     }
   }
 

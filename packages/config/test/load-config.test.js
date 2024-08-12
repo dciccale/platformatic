@@ -141,9 +141,7 @@ test('loadConfig with Store', async t => {
 })
 
 test('loadEmptyConfig', async t => {
-  const store = new Store()
-  store.add(app)
-  const { configManager, args } = await loadEmptyConfig(join(__dirname, 'fixtures'), store)
+  const { configManager, args } = await loadEmptyConfig(join(__dirname, 'fixtures'), app)
 
   assert.deepEqual(args, {})
   assert.deepEqual(configManager.current, {})
